@@ -13,7 +13,7 @@ $.extend(frappe.model, {
 		'_user_tags', '_comments', '_assign', '_liked_by', 'docstatus',
 		'parent', 'parenttype', 'parentfield', 'idx'],
 
-	core_doctypes_list: ['DocType', 'DocField', 'DocPerm', 'User', 'Role', 'Has Role',
+	core_doctypes_list: ['DocType', 'DocField', 'DocPerm', 'Role', 'Has Role',
 		'Page', 'Module Def', 'Print Format', 'Report', 'Customize Form',
 		'Customize Form Field', 'Property Setter', 'Custom Field', 'Custom Script'],
 
