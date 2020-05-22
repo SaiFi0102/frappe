@@ -69,7 +69,8 @@ class Report(Document):
 			filters={"parent": self.name})]
 
 		custom_roles = get_custom_allowed_roles('report', self.name)
-		allowed.extend(custom_roles)
+		if custom_roles:
+			allowed = custom_roles
 
 		if not allowed:
 			return True
