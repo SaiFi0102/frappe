@@ -15,7 +15,7 @@ from frappe.utils import (format_time, get_link_to_form, get_url_to_report,
 from frappe.utils.csvutils import to_csv
 from frappe.utils.xlsxutils import make_xlsx
 from frappe.modules import get_module_path
-from frappe.desk.query_report import get_report_module_dotted_path
+from frappe.core.doctype.report.report import get_report_module_dotted_path
 import os
 
 max_reports_per_user = frappe.local.conf.max_reports_per_user or 3
