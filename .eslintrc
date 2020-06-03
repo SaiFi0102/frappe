@@ -19,10 +19,6 @@
 			"error",
 			"1tbs"
 		],
-		"space-before-function-paren": [
-			"error",
-			"never"
-		],
 		"space-unary-ops": [
 			"error",
 			{ "words": true }
@@ -64,9 +60,8 @@
 	"root": true,
 	"globals": {
 		"frappe": true,
+		"Vue": true,
 		"__": true,
-		"_p": true,
-		"_f": true,
 		"repl": true,
 		"Class": true,
 		"locals": true,
@@ -100,6 +95,7 @@
 		"CANCEL": true,
 		"copy_dict": true,
 		"get_number_format_info": true,
+		"strip_number_groups": true,
 		"print_table": true,
 		"Layout": true,
 		"web_form_settings": true,
@@ -120,7 +116,6 @@
 		"getCookie": true,
 		"getCookies": true,
 		"get_url_arg": true,
-
 		"md5": true,
 		"$": true,
 		"jQuery": true,
@@ -141,6 +136,14 @@
 		"JsBarcode": true,
 		"L": true,
 		"Chart": true,
-		"DataTable": true
+		"DataTable": true,
+		"Cypress": true,
+		"cy": true,
+		"it": true,
+		"expect": true,
+		"context": true,
+		"before": true,
+		"beforeEach": true,
+		"qz": true
 	}
 }

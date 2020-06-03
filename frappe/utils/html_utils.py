@@ -10,8 +10,8 @@ def clean_html(html):
 		return html
 
 	return bleach.clean(clean_script_and_style(html),
-		tags=['div', 'p', 'br', 'ul', 'ol', 'li', 'b', 'i', 'em',
-                'table', 'thead', 'tbody', 'td', 'tr'],
+		tags=['div', 'p', 'br', 'ul', 'ol', 'li', 'strong', 'b', 'em', 'i', 'u',
+			'table', 'thead', 'tbody', 'td', 'tr'],
 		attributes=[],
 		styles=['color', 'border', 'border-color'],
 		strip=True, strip_comments=True)
@@ -21,7 +21,7 @@ def clean_email_html(html):
 		return html
 
 	return bleach.clean(clean_script_and_style(html),
-		tags=['div', 'p', 'br', 'ul', 'ol', 'li', 'b', 'i', 'em', 'a',
+		tags=['div', 'p', 'br', 'ul', 'ol', 'li', 'strong', 'b', 'em', 'i', 'u', 'a',
 			'table', 'thead', 'tbody', 'td', 'tr', 'th', 'pre', 'code',
 			'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'button', 'img'],
 		attributes=['border', 'colspan', 'rowspan',
@@ -103,6 +103,11 @@ def get_icon_html(icon, small=False):
 	else:
 		return "<i class='{icon}'></i>".format(icon=icon)
 
+def unescape_html(value):
+	from six.moves.html_parser import HTMLParser
+	h = HTMLParser()
+	return h.unescape(value)
+
 # adapted from https://raw.githubusercontent.com/html5lib/html5lib-python/4aa79f113e7486c7ec5d15a6e1777bfe546d3259/html5lib/sanitizer.py
 acceptable_elements = [
 	'a', 'abbr', 'acronym', 'address', 'area',
@@ -162,7 +167,9 @@ acceptable_attributes = [
 	'urn', 'valign', 'value', 'variable', 'volume', 'vspace', 'vrml',
 	'width', 'wrap', 'xml:lang', 'data-row', 'data-list', 'data-language',
 	'data-value', 'role', 'frameborder', 'allowfullscreen', 'spellcheck',
-	'data-mode', 'data-gramm', 'data-placeholder', 'data-comment'
+	'data-mode', 'data-gramm', 'data-placeholder', 'data-comment',
+	'data-id', 'data-denotation-char', 'itemprop', 'itemscope',
+	'itemtype', 'itemid', 'itemref', 'datetime'
 ]
 
 mathml_attributes = [

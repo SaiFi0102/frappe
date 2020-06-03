@@ -13,7 +13,7 @@ from frappe import _, safe_decode, safe_encode
 from frappe.utils import (extract_email_id, convert_utc_to_user_timezone, now,
 	cint, cstr, strip, markdown, parse_addr)
 from frappe.utils.scheduler import log
-from frappe.utils.file_manager import get_random_filename, save_file, MaxFileSizeReachedError
+from frappe.core.doctype.file.file import get_random_filename, MaxFileSizeReachedError
 
 class EmailSizeExceededError(frappe.ValidationError): pass
 class EmailTimeoutError(frappe.ValidationError): pass
@@ -48,9 +48,9 @@ class EmailServer:
 		"""Connect to IMAP"""
 		try:
 			if cint(self.settings.use_ssl):
-				self.imap = Timed_IMAP4_SSL(self.settings.host, timeout=frappe.conf.get("pop_timeout"))
+				self.imap = Timed_IMAP4_SSL(self.settings.host, self.settings.incoming_port, timeout=frappe.conf.get("pop_timeout"))
 			else:
-				self.imap = Timed_IMAP4(self.settings.host, timeout=frappe.conf.get("pop_timeout"))
+				self.imap = Timed_IMAP4(self.settings.host, self.settings.incoming_port, timeout=frappe.conf.get("pop_timeout"))
 			self.imap.login(self.settings.username, self.settings.password)
 			# connection established!
 			return True
@@ -68,9 +68,9 @@ class EmailServer:
 		#this method return pop connection
 		try:
 			if cint(self.settings.use_ssl):
-				self.pop = Timed_POP3_SSL(self.settings.host, timeout=frappe.conf.get("pop_timeout"))
+				self.pop = Timed_POP3_SSL(self.settings.host, self.settings.incoming_port, timeout=frappe.conf.get("pop_timeout"))
 			else:
-				self.pop = Timed_POP3(self.settings.host, timeout=frappe.conf.get("pop_timeout"))
+				self.pop = Timed_POP3(self.settings.host, self.settings.incoming_port, timeout=frappe.conf.get("pop_timeout"))
 
 			self.pop.user(self.settings.username)
 			self.pop.pass_(self.settings.password)
@@ -298,7 +298,7 @@ class EmailServer:
 			"Connection timed out",
 		)
 		for message in messages:
-			if message in strip(cstr(e.message)) or message in strip(cstr(getattr(e, 'strerror', ''))):
+			if message in strip(cstr(e)) or message in strip(cstr(getattr(e, 'strerror', ''))):
 				return True
 		return False
 
@@ -457,9 +457,9 @@ class Email:
 	def show_attached_email_headers_in_content(self, part):
 		# get the multipart/alternative message
 		try:
-		    from html import escape  # python 3.x
+			from html import escape  # python 3.x
 		except ImportError:
-		    from cgi import escape  # python 2.x
+			from cgi import escape  # python 2.x
 
 		message = list(part.walk())[1]
 		headers = []
@@ -481,7 +481,7 @@ class Email:
 		"""Detect chartset."""
 		charset = part.get_content_charset()
 		if not charset:
-			charset = chardet.detect(frappe.safe_encode(part))['encoding']
+			charset = chardet.detect(safe_encode(cstr(part)))['encoding']
 
 		return charset
 
@@ -515,7 +515,7 @@ class Email:
 				'fcontent': fcontent,
 			})
 
-			cid = (part.get("Content-Id") or "").strip("><")
+			cid = (cstr(part.get("Content-Id")) or "").strip("><")
 			if cid:
 				self.cid_map[fname] = cid
 
@@ -525,12 +525,18 @@ class Email:
 
 		for attachment in self.attachments:
 			try:
-				file_data = save_file(attachment['fname'], attachment['fcontent'],
-					doc.doctype, doc.name, is_private=1)
-				saved_attachments.append(file_data)
+				_file = frappe.get_doc({
+					"doctype": "File",
+					"file_name": attachment['fname'],
+					"attached_to_doctype": doc.doctype,
+					"attached_to_name": doc.name,
+					"is_private": 1,
+					"content": attachment['fcontent']})
+				_file.save()
+				saved_attachments.append(_file)
 
 				if attachment['fname'] in self.cid_map:
-					self.cid_map[file_data.name] = self.cid_map[attachment['fname']]
+					self.cid_map[_file.name] = self.cid_map[attachment['fname']]
 
 			except MaxFileSizeReachedError:
 				# WARNING: bypass max file size exception
@@ -579,6 +585,7 @@ class Timed_POP3(TimerMixin, poplib.POP3):
 
 class Timed_POP3_SSL(TimerMixin, poplib.POP3_SSL):
 	_super = poplib.POP3_SSL
+
 class Timed_IMAP4(TimerMixin, imaplib.IMAP4):
 	_super = imaplib.IMAP4
 

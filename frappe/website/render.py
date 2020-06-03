@@ -30,6 +30,7 @@ def render(path=None, http_status_code=None):
 
 	try:
 		path = path.strip('/ ')
+		raise_if_disabled(path)
 		resolve_redirect(path)
 		path = resolve_path(path)
 		data = None
@@ -40,6 +41,8 @@ def render(path=None, http_status_code=None):
 			http_status_code = 404
 		elif is_static_file(path):
 			return get_static_file_response()
+		elif is_web_form(path):
+			data = render_web_form(path)
 		else:
 			try:
 				data = render_page_by_language(path)
@@ -100,6 +103,13 @@ def is_static_file(path):
 
 	return False
 
+def is_web_form(path):
+	return bool(frappe.get_all("Web Form", filters={'route': path}))
+
+def render_web_form(path):
+	data = render_page(path)
+	return data
+
 def get_static_file_response():
 	try:
 		f = open(frappe.flags.file_path, 'rb')
@@ -115,12 +125,12 @@ def build_response(path, data, http_status_code, headers=None):
 	response = Response()
 	response.data = set_content_type(response, data, path)
 	response.status_code = http_status_code
-	response.headers["X-Page-Name"] = path.encode("utf-8")
+	response.headers["X-Page-Name"] = path.encode("ascii", errors="xmlcharrefreplace")
 	response.headers["X-From-Cache"] = frappe.local.response.from_cache or False
 
 	if headers:
 		for key, val in iteritems(headers):
-			response.headers[key] = val.encode("utf-8")
+			response.headers[key] = val.encode("ascii", errors="xmlcharrefreplace")
 
 	return response
 
@@ -221,7 +231,9 @@ def resolve_path(path):
 def resolve_from_map(path):
 	m = Map([Rule(r["from_route"], endpoint=r["to_route"], defaults=r.get("defaults"))
 		for r in get_website_rules()])
-	urls = m.bind_to_environ(frappe.local.request.environ)
+
+	if frappe.local.request:
+		urls = m.bind_to_environ(frappe.local.request.environ)
 	try:
 		endpoint, args = urls.match("/" + path)
 		path = endpoint
@@ -324,3 +336,17 @@ def add_csrf_token(data):
 				frappe.local.session.data.csrf_token))
 	else:
 		return data
+
+def raise_if_disabled(path):
+	routes = frappe.db.get_all('Portal Menu Item',
+		fields=['route', 'enabled'],
+		filters={
+			'enabled': 0,
+			'route': ['like', '%{0}'.format(path)]
+		}
+	)
+
+	for r in routes:
+		_path = r.route.lstrip('/')
+		if path == _path and not r.enabled:
+			raise frappe.PermissionError

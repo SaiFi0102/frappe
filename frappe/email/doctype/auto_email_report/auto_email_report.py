@@ -11,7 +11,7 @@ import frappe
 from frappe import _, scrub
 from frappe.model.document import Document
 from frappe.utils import (format_time, get_link_to_form, get_url_to_report,
-	global_date_format, now, now_datetime, validate_email_add, today, add_to_date, get_html_format)
+	global_date_format, now, now_datetime, validate_email_address, today, add_to_date, get_html_format)
 from frappe.utils.csvutils import to_csv
 from frappe.utils.xlsxutils import make_xlsx
 from frappe.modules import get_module_path
@@ -35,7 +35,7 @@ class AutoEmailReport(Document):
 		valid = []
 		for email in self.email_to.split():
 			if email:
-				validate_email_add(email, True)
+				validate_email_address(email, True)
 				valid.append(email)
 
 		self.email_to = '\n'.join(valid)
@@ -66,7 +66,7 @@ class AutoEmailReport(Document):
 			self.prepare_dynamic_filters()
 
 		columns, data = report.get_data(limit=self.no_of_rows or 100, user = self.user,
-			filters = self.filters, as_dict=True)
+			filters = self.filters, as_dict=True, ignore_prepared_report=True)
 
 		# add serial numbers
 		columns.insert(0, frappe._dict(fieldname='idx', label='', width='30px'))

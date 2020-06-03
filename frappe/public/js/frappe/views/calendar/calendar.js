@@ -25,10 +25,12 @@ frappe.views.CalendarView = class CalendarView extends frappe.views.ListView {
 	}
 
 	setup_defaults() {
-		super.setup_defaults();
-		this.page_title = __('{0} Calendar', [this.page_title]);
-		this.calendar_settings = frappe.views.calendar[this.doctype] || {};
-		this.calendar_name = frappe.get_route()[3];
+		return super.setup_defaults()
+			.then(() => {
+				this.page_title = __('{0} Calendar', [this.page_title]);
+				this.calendar_settings = frappe.views.calendar[this.doctype] || {};
+				this.calendar_name = frappe.get_route()[3];
+			});
 	}
 
 	setup_view() {
@@ -348,6 +350,9 @@ frappe.views.Calendar = Class.extend({
 
 			me.fix_end_date_for_event_render(d);
 			me.prepare_colors(d);
+
+			d.title = frappe.utils.html2text(d.title);
+			
 			return d;
 		});
 	},

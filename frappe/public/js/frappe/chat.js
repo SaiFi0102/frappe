@@ -9,7 +9,7 @@ import './socketio_client'
 import './ui/dialog'
 import './ui/capture'
 
-import './misc/user'
+import './utils/user'
 
 /* eslint semi: "never" */
 // Fuck semicolons - https://mislav.net/2010/05/semicolons
@@ -93,10 +93,10 @@ frappe.datetime.datetime = class {
 	 * @description Frappe's datetime Class's constructor.
 	 */
 	constructor (instance, format = null) {
-		if ( typeof moment === undefined )
+		if ( typeof moment === 'undefined' )
 			throw new frappe.ImportError(`Moment.js not installed.`)
 
-		this.moment      = instance ? moment(instance, format) : moment()
+		this.moment = instance ? moment(instance, format) : moment()
 	}
 
 	/**
@@ -1421,7 +1421,7 @@ class extends Component {
 			const state     = [ ]
 
 			for (const room of rooms)
-				if ( ["Group", "Visitor"].includes(room.type) || room.owner === frappe.session.user || room.last_message ) {
+				  if ( ["Group", "Visitor"].includes(room.type) || room.owner === frappe.session.user || room.last_message || room.users.includes(frappe.session.user)) {
 					frappe.log.info(`Adding ${room.name} to component.`)
 					state.push(room)
 				}
@@ -1566,14 +1566,23 @@ class extends Component {
 				const  alert   = // TODO: ellipses content
 				`
 				<span data-action="show-message" class="cursor-pointer">
-					<span class="indicator yellow"/> <b>${frappe.user.first_name(r.user)}</b>: ${r.content}
+					<span class="indicator yellow"/>
+						<span class="avatar avatar-small">
+							<span class="avatar-frame" style="background-image: url(${frappe.user.image(r.user)})"></span>
+						</span>
+						<b>${frappe.user.first_name(r.user)}</b>: ${r.content}
 				</span>
 				`
-				frappe.show_alert(alert, 3, {
+				frappe.show_alert(alert, 15, {
 					"show-message": function (r) {
 						this.room.select(r.room)
 						this.base.firstChild._component.toggle()
 					}.bind(this, r)
+				})
+				frappe.notify(`${frappe.user.first_name(r.user)}`, {
+					body: r.content,
+					icon: frappe.user.image(r.user),
+					tag: r.user
 				})
 			}
 
@@ -1644,7 +1653,7 @@ class extends Component {
 							 ],
 							action: {
 								primary: {
-									   label: __("Create"),
+									   label: __('Create'),
 									onsubmit: (values) => {
 										if ( values.type === "Group" ) {
 											if ( !frappe._.is_empty(values.users) ) {
@@ -1772,6 +1781,8 @@ class extends Component {
 
 		if ( props.target )
 			$(props.target).click(() => this.toggle())
+
+		frappe.chat.widget = this
 	}
 
 	toggle  (active) {
@@ -1955,7 +1966,7 @@ class extends Component {
 				const content = message.content
 
 				if ( message.type === "File" ) {
-					item.subtitle = `📁 ${content.name || content.path}`
+					item.subtitle = `📁 ${content.name}`
 				} else {
 					item.subtitle = props.last_message.content
 				}
@@ -1975,7 +1986,7 @@ class extends Component {
 				const content = message.content
 
 				if ( message.type === "File" ) {
-					item.subtitle = `📁 ${content.name || content.path}`
+					item.subtitle = `📁 ${content.name}`
 				} else {
 					item.subtitle = props.last_message.content
 				}
@@ -2130,11 +2141,12 @@ class extends Component {
 				 icon: "file",
 				label: "File",
 				onclick: ( ) => {
-					const dialog = frappe.upload.make({
-							args: { doctype: "Chat Room", docname: props.name, from_form: 1 },
-						callback: (a, b, args) => {
-							const { file_url, file_name } = a
-							frappe.chat.message.send(props.name, { path: file_url, name: file_name }, "File")
+					new frappe.ui.FileUploader({
+						doctype: "Chat Room",
+						docname: props.name,
+						on_success(file_doc) {
+							const { file_url, filename } = file_doc
+							frappe.chat.message.send(props.name, { path: file_url, name: filename }, "File")
 						}
 					})
 				}
@@ -2247,14 +2259,19 @@ class extends Component {
 						) : null,
 					h("div","",
 						h("div", { class: "panel-title" },
-							h("div", { class: "cursor-pointer", onclick: () => { frappe.set_route(item.route) }},
+							h("div", { class: "cursor-pointer", onclick: () => {
+								frappe.session.user !== "Guest" ?
+									frappe.set_route(item.route) : null;
+							}},
 								h(frappe.Chat.Widget.MediaProfile, { ...item })
 							)
 						)
 					),
-					h("div", { class: popper ? "col-xs-1"  : "col-xs-3" },
+					h("div", { class: popper ? "col-xs-2"  : "col-xs-3" },
 						h("div", { class: "text-right" },
-
+							frappe._.is_mobile() && h(frappe.components.Button, { class: "frappe-chat-close", onclick: props.toggle },
+								h(frappe.components.Octicon, { type: "x" })
+							)
 						)
 					)
 				)
@@ -2396,7 +2413,7 @@ class extends Component {
 						h("small","",
 							props.type === "File" ?
 								h("a", { class: "no-decoration", href: content.path, target: "_blank" },
-									h(frappe.components.FontAwesome, { type: "file", fixed: true }), ` ${content.name || content.path}`
+									h(frappe.components.FontAwesome, { type: "file", fixed: true }), ` ${content.name}`
 								)
 								:
 								content
@@ -2511,7 +2528,7 @@ class extends Component {
 					h("div",{class:"input-group input-group-lg"},
 						!frappe._.is_empty(props.actions) ?
 							h("div",{class:"input-group-btn dropup"},
-								h(frappe.components.Button,{ class: "dropdown-toggle", "data-toggle": "dropdown"},
+								h(frappe.components.Button,{ class: (frappe.session.user === "Guest" ? "disabled" : "dropdown-toggle"), "data-toggle": "dropdown"},
 									h(frappe.components.FontAwesome, { class: "text-muted", type: "paperclip", fixed: true })
 								),
 								h("div",{ class:"dropdown-menu dropdown-menu-left", onclick: e => e.stopPropagation() },
@@ -2677,7 +2694,7 @@ frappe.chat.render = (render = true, force = false) =>
 	// Avoid re-renders. Once is enough.
 	if ( !frappe.chatter || force ) {
 		frappe.chatter = new frappe.Chat({
-			target: desk ? '.navbar .frappe-chat-toggle' : null
+			target: desk ? '.frappe-chat-toggle' : null
 		})
 
 		if ( render ) {
@@ -2740,7 +2757,7 @@ frappe.chat.setup  = () => {
 		frappe.chat.profile.create('enable_chat').then(({ enable_chat }) => {
 			frappe.log.info(`Chat Profile created for User ${frappe.session.user}.`)
 
-			if ( 'desk' in frappe ) { // same as desk?
+			if ( 'desk' in frappe && frappe.sys_defaults ) { // same as desk?
 				const should_render = Boolean(parseInt(frappe.sys_defaults.enable_chat)) && enable_chat
 				frappe.chat.render(should_render)
 			}

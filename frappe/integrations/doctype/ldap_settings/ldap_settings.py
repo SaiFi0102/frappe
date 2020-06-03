@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from frappe.model.document import Document
-
+from frappe.twofactor import (should_run_2fa, authenticate_for_2factor, confirm_otp_token)
 
 class LDAPSettings(Document):
 	def validate(self):
@@ -83,6 +83,7 @@ class LDAPSettings(Document):
 		current_roles = set([d.role for d in user.get("roles")])
 
 		needed_roles = set()
+		needed_roles.add(self.default_role)
 
 		lower_groups = [g.lower() for g in additional_groups or []]
 
@@ -96,16 +97,13 @@ class LDAPSettings(Document):
 			missing_roles = needed_roles.difference(current_roles)
 			user.add_roles(*missing_roles)
 
-		if len(roles_to_remove) > 0:
-			user.remove_roles(*roles_to_remove)
+		user.remove_roles(*roles_to_remove)
 
 	def create_or_update_user(self, user_data, groups=None):
 		user = None
 		if frappe.db.exists("User", user_data['email']):
 			user = frappe.get_doc("User", user_data['email'])
 			LDAPSettings.update_user_fields(user=user, user_data=user_data)
-			# always add the default role.
-			user.add_roles(self.default_role)
 		else:
 			doc = user_data
 			doc.update({
@@ -113,12 +111,14 @@ class LDAPSettings(Document):
 				"send_welcome_email": 0,
 				"language": "",
 				"user_type": "System User",
-				"roles": [{
-					"role": self.default_role
-				}]
+				# "roles": [{
+				# 	"role": self.default_role
+				# }]
 			})
 			user = frappe.get_doc(doc)
 			user.insert(ignore_permissions=True)
+		# always add default role.
+		user.add_roles(self.default_role)
 		if self.ldap_group_field:
 			self.sync_roles(user, groups)
 		return user
@@ -153,13 +153,10 @@ class LDAPSettings(Document):
 
 		conn = self.connect_to_ldap(self.base_dn, self.get_password(raise_exception=False))
 
-		try:
-			conn.search(
-				search_base=self.organizational_unit,
-				search_filter="({0})".format(user_filter),
-				attributes=ldap_attributes)
-		except Exception as ex:
-			frappe.throw(_(str(ex)))
+		conn.search(
+			search_base=self.organizational_unit,
+			search_filter="({0})".format(user_filter),
+			attributes=ldap_attributes)
 
 		if len(conn.entries) == 1 and conn.entries[0]:
 			user = conn.entries[0]
@@ -169,15 +166,18 @@ class LDAPSettings(Document):
 			groups = None
 			if self.ldap_group_field:
 				groups = getattr(user, self.ldap_group_field).values
-
 			return self.create_or_update_user(self.convert_ldap_entry_to_dict(user), groups=groups)
 		else:
 			frappe.throw(_("Invalid username or password"))
 
 	def convert_ldap_entry_to_dict(self, user_entry):
+
+		# support multiple email values
+		email = user_entry[self.ldap_email_field]
+
 		data = {
 			'username': user_entry[self.ldap_username_field].value,
-			'email': user_entry[self.ldap_email_field].value,
+			'email': str(email.value[0] if isinstance(email.value, list) else email.value),
 			'first_name': user_entry[self.ldap_first_name_field].value
 		}
 
@@ -207,6 +207,10 @@ def login():
 	user = ldap.authenticate(frappe.as_unicode(args.usr), frappe.as_unicode(args.pwd))
 
 	frappe.local.login_manager.user = user.name
+	if should_run_2fa(user.name):
+		authenticate_for_2factor(user.name)
+		if not confirm_otp_token(frappe.local.login_manager):
+			return False
 	frappe.local.login_manager.post_login()
 
 	# because of a GET request!

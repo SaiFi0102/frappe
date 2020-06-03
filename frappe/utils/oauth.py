@@ -170,7 +170,7 @@ def login_oauth_user(data=None, provider=None, state=None, email_id=None, key=No
 
 	if isinstance(state, string_types):
 		state = base64.b64decode(state)
-		state = json.loads(state)
+		state = json.loads(state.decode("utf-8"))
 
 	if not (state and state["token"]):
 		frappe.respond_as_web_page(_("Invalid Request"), _("Token is missing"), http_status_code=417)
@@ -283,6 +283,12 @@ def update_oauth_user(user, data, provider):
 	if save:
 		user.flags.ignore_permissions = True
 		user.flags.no_welcome_mail = True
+
+		# set default signup role as per Portal Settings
+		default_role = frappe.db.get_single_value("Portal Settings", "default_role")
+		if default_role:
+			user.add_roles(default_role)
+
 		user.save()
 
 def get_first_name(data):

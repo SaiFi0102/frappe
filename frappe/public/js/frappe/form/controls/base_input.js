@@ -74,8 +74,10 @@ frappe.ui.form.ControlInput = frappe.ui.form.Control.extend({
 
 		if (me.disp_status != "None") {
 			// refresh value
-			if (me.doctype && me.docname) {
+			if (me.frm) {
 				me.value = frappe.model.get_value(me.doctype, me.docname, me.df.fieldname);
+			} else if (me.doc) {
+				me.value = me.doc[me.df.fieldname];
 			}
 
 			if (me.can_write()) {
@@ -117,9 +119,12 @@ frappe.ui.form.ControlInput = frappe.ui.form.Control.extend({
 		} else {
 			value = this.value || value;
 		}
-		this.disp_area && $(this.disp_area)
-			.html(frappe.format(value, this.df, {no_icon:true, inline:true},
-				this.doc || (this.frm && this.frm.doc)));
+		if (this.df.fieldtype === 'Data') {
+			value = frappe.utils.escape_html(value);
+		}
+		let doc = this.doc || (this.frm && this.frm.doc);
+		let display_value = frappe.format(value, this.df, { no_icon: true, inline: true }, doc);
+		this.disp_area && $(this.disp_area).html(display_value);
 	},
 
 	bind_change_event: function() {

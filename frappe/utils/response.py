@@ -17,11 +17,12 @@ from werkzeug.local import LocalProxy
 from werkzeug.wsgi import wrap_file
 from werkzeug.wrappers import Response
 from werkzeug.exceptions import NotFound, Forbidden
-from frappe.core.doctype.file.file import check_file_permission
 from frappe.website.render import render
 from frappe.utils import cint
 from six import text_type
 from six.moves.urllib.parse import quote
+from frappe.core.doctype.access_log.access_log import make_access_log
+
 
 def report_error(status_code):
 	'''Build error. Show traceback in developer mode'''
@@ -89,7 +90,8 @@ def as_json():
 def as_pdf():
 	response = Response()
 	response.mimetype = "application/pdf"
-	response.headers["Content-Disposition"] = ("filename=\"%s\"" % frappe.response['filename'].replace(' ', '_')).encode("utf-8")
+	encoded_filename = quote(frappe.response['filename'].replace(' ', '_'))
+	response.headers["Content-Disposition"] = ("filename=\"%s\"" % frappe.response['filename'].replace(' ', '_') + ";filename*=utf-8''%s" % encoded_filename).encode("utf-8")
 	response.data = frappe.response['filecontent']
 	return response
 
@@ -156,6 +158,7 @@ def redirect():
 def download_backup(path):
 	try:
 		frappe.only_for(("System Manager", "Administrator"))
+		make_access_log(report_name='Backup')
 	except frappe.PermissionError:
 		raise Forbidden(_("You need to be logged in and have System Manager Role to be able to access backups."))
 
@@ -163,10 +166,20 @@ def download_backup(path):
 
 def download_private_file(path):
 	"""Checks permissions and sends back private file"""
-	try:
-		check_file_permission(path)
 
-	except frappe.PermissionError:
+	files = frappe.db.get_all('File', {'file_url': path})
+	can_access = False
+	# this file might be attached to multiple documents
+	# if the file is accessible from any one of those documents
+	# then it should be downloadable
+	for f in files:
+		_file = frappe.get_doc("File", f)
+		can_access = _file.is_downloadable()
+		if can_access:
+			make_access_log(doctype='File', document=_file.name, file_type=os.path.splitext(path)[-1][1:])
+			break
+
+	if not can_access:
 		raise Forbidden(_("You don't have permission to access this file"))
 
 	return send_private_file(path.split("/private", 1)[1])
@@ -191,7 +204,13 @@ def send_private_file(path):
 		response = Response(wrap_file(frappe.local.request.environ, f), direct_passthrough=True)
 
 	# no need for content disposition and force download. let browser handle its opening.
-	# response.headers.add(b'Content-Disposition', b'attachment', filename=filename.encode("utf-8"))
+	# Except for those that can be injected with scripts.
+
+	extension = os.path.splitext(path)[1]
+	blacklist = ['.svg', '.html', '.htm', '.xml']
+
+	if extension.lower() in blacklist:
+		response.headers.add('Content-Disposition', 'attachment', filename=filename.encode("utf-8"))
 
 	response.mimetype = mimetypes.guess_type(filename)[0] or 'application/octet-stream'
 
