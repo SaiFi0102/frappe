@@ -16,7 +16,8 @@
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Token",
-   "reqd": 1
+   "reqd": 1,
+   "unique": 1
   },
   {
    "fieldname": "ip_address",
@@ -30,7 +31,7 @@
   }
  ],
  "in_create": 1,
- "modified": "2019-11-07 13:21:24.514558",
+ "modified": "2020-06-04 06:41:33.583334",
  "modified_by": "Administrator",
  "module": "Chat",
  "name": "Chat Token",

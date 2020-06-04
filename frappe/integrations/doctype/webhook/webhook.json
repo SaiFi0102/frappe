@@ -1,5 +1,4 @@
 {
- "actions": [],
  "autoname": "naming_series:",
  "creation": "2017-09-08 16:16:13.060641",
  "doctype": "DocType",
@@ -129,8 +128,7 @@
    "options": "\nHOOK-.####"
   }
  ],
- "links": [],
- "modified": "2020-01-06 02:51:07.997566",
+ "modified": "2020-06-04 06:32:18.971139",
  "modified_by": "Administrator",
  "module": "Integrations",
  "name": "Webhook",
