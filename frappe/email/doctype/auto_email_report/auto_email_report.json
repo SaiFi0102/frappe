@@ -5,6 +5,7 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "title",
   "report",
   "user",
   "enabled",
@@ -87,7 +88,7 @@
    "default": "100",
    "fieldname": "no_of_rows",
    "fieldtype": "Int",
-   "label": "No of Rows (Max 500)"
+   "label": "No of Rows (Max 1000)"
   },
   {
    "collapsible": 1,
@@ -177,7 +178,7 @@
    "fieldname": "format",
    "fieldtype": "Select",
    "label": "Format",
-   "options": "HTML\nXLSX\nCSV",
+   "options": "PDF\nHTML\nXLSX\nCSV",
    "reqd": 1
   },
   {
@@ -198,9 +199,15 @@
    "hidden": 1,
    "label": "Reference Report",
    "read_only": 1
+  },
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Title",
+   "unique": 1
   }
  ],
- "modified": "2020-06-04 06:53:46.446852",
+ "modified": "2020-06-19 08:10:05.885568",
  "modified_by": "Administrator",
  "module": "Email",
  "name": "Auto Email Report",
@@ -233,5 +240,6 @@
  ],
  "sort_field": "modified",
  "sort_order": "DESC",
+ "title_field": "title",
  "track_changes": 1
 }
