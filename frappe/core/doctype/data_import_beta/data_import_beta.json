@@ -1,4 +1,5 @@
 {
+ "actions": [],
  "autoname": "format:{reference_doctype} Import on {creation}",
  "beta": 1,
  "creation": "2019-08-04 14:16:08.318714",
@@ -15,11 +16,11 @@
   "submit_after_import",
   "mute_emails",
   "template_options",
-  "section_import_preview",
-  "import_preview",
   "import_warnings_section",
   "template_warnings",
   "import_warnings",
+  "section_import_preview",
+  "import_preview",
   "import_log_section",
   "import_log",
   "show_failed_logs",
@@ -33,7 +34,9 @@
    "label": "Document Type",
    "options": "DocType",
    "reqd": 1,
-   "set_only_once": 1
+   "set_only_once": 1,
+   "show_days": 1,
+   "show_seconds": 1
   },
   {
    "fieldname": "import_type",
@@ -42,28 +45,38 @@
    "label": "Import Type",
    "options": "\nInsert New Records\nUpdate Existing Records",
    "reqd": 1,
-   "set_only_once": 1
+   "set_only_once": 1,
+   "show_days": 1,
+   "show_seconds": 1
   },
   {
    "depends_on": "eval:!doc.__islocal",
    "fieldname": "import_file",
    "fieldtype": "Attach",
    "in_list_view": 1,
-   "label": "Import File"
+   "label": "Import File",
+   "show_days": 1,
+   "show_seconds": 1
   },
   {
    "fieldname": "import_preview",
    "fieldtype": "HTML",
-   "label": "Import Preview"
+   "label": "Import Preview",
+   "show_days": 1,
+   "show_seconds": 1
   },
   {
    "fieldname": "section_import_preview",
    "fieldtype": "Section Break",
-   "label": "Preview"
+   "label": "Preview",
+   "show_days": 1,
+   "show_seconds": 1
   },
   {
    "fieldname": "column_break_5",
-   "fieldtype": "Column Break"
+   "fieldtype": "Column Break",
+   "show_days": 1,
+   "show_seconds": 1
   },
   {
    "fieldname": "template_options",
@@ -71,23 +84,31 @@
    "hidden": 1,
    "label": "Template Options",
    "options": "JSON",
-   "read_only": 1
+   "read_only": 1,
+   "show_days": 1,
+   "show_seconds": 1
   },
   {
    "fieldname": "import_log",
    "fieldtype": "Code",
    "label": "Import Log",
-   "options": "JSON"
+   "options": "JSON",
+   "show_days": 1,
+   "show_seconds": 1
   },
   {
    "fieldname": "import_log_section",
    "fieldtype": "Section Break",
-   "label": "Import Log"
+   "label": "Import Log",
+   "show_days": 1,
+   "show_seconds": 1
   },
   {
    "fieldname": "import_log_preview",
    "fieldtype": "HTML",
-   "label": "Import Log Preview"
+   "label": "Import Log Preview",
+   "show_days": 1,
+   "show_seconds": 1
   },
   {
    "default": "Pending",
@@ -96,54 +117,71 @@
    "hidden": 1,
    "label": "Status",
    "options": "Pending\nSuccess\nPartial Success\nError",
-   "read_only": 1
+   "read_only": 1,
+   "show_days": 1,
+   "show_seconds": 1
   },
   {
    "fieldname": "template_warnings",
    "fieldtype": "Code",
    "hidden": 1,
    "label": "Template Warnings",
-   "options": "JSON"
+   "options": "JSON",
+   "show_days": 1,
+   "show_seconds": 1
   },
   {
    "default": "0",
    "fieldname": "submit_after_import",
    "fieldtype": "Check",
    "label": "Submit After Import",
-   "set_only_once": 1
+   "set_only_once": 1,
+   "show_days": 1,
+   "show_seconds": 1
   },
   {
    "fieldname": "import_warnings_section",
    "fieldtype": "Section Break",
-   "label": "Warnings"
+   "label": "Warnings",
+   "show_days": 1,
+   "show_seconds": 1
   },
   {
    "fieldname": "import_warnings",
    "fieldtype": "HTML",
-   "label": "Import Warnings"
+   "label": "Import Warnings",
+   "show_days": 1,
+   "show_seconds": 1
   },
   {
    "depends_on": "reference_doctype",
    "fieldname": "download_template",
    "fieldtype": "Button",
-   "label": "Download Template"
+   "label": "Download Template",
+   "show_days": 1,
+   "show_seconds": 1
   },
   {
    "default": "1",
    "fieldname": "mute_emails",
    "fieldtype": "Check",
    "label": "Don't Send Emails",
-   "set_only_once": 1
+   "set_only_once": 1,
+   "show_days": 1,
+   "show_seconds": 1
   },
   {
    "default": "0",
    "fieldname": "show_failed_logs",
    "fieldtype": "Check",
-   "label": "Show Failed Logs"
+   "label": "Show Failed Logs",
+   "show_days": 1,
+   "show_seconds": 1
   }
  ],
  "hide_toolbar": 1,
- "modified": "2020-06-04 06:32:07.286510",
+ "links": [],
+ "modified": "2020-05-28 22:11:38.266208",
  "modified_by": "Administrator",
  "module": "Core",
  "name": "Data Import Beta",
