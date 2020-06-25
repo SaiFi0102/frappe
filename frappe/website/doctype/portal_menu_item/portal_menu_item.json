@@ -9,7 +9,8 @@
   "route",
   "reference_doctype",
   "role",
-  "target"
+  "target",
+  "icon"
  ],
  "fields": [
   {
@@ -57,10 +58,15 @@
    "fieldtype": "Data",
    "label": "Target",
    "read_only": 1
+  },
+  {
+   "fieldname": "icon",
+   "fieldtype": "Data",
+   "label": "Icon"
   }
  ],
  "istable": 1,
- "modified": "2020-06-04 06:53:34.066275",
+ "modified": "2020-06-22 08:13:37.061207",
  "modified_by": "Administrator",
  "module": "Website",
  "name": "Portal Menu Item",
