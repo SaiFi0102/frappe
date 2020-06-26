@@ -1,7 +1,14 @@
-{% if not no_breadcrumbs and parents %}
+{% if not no_breadcrumbs %}
 <div class="container mt-3">
 	<nav aria-label="breadcrumb">
 		<ol class="breadcrumb" itemscope itemtype="http://schema.org/BreadcrumbList">
+			<li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem" class="breadcrumb-item">
+				<a itemprop="item" href="{{ url_prefix }}{{ '/' | abs_url }}" itemprop="url">
+					<span itemprop="name">{{ _("Home") }}</span>
+					<meta itemprop="position" content="0" />
+				</a>
+			</li>
+			{% if parents %}
 			{%- set parents = parents[-3:] %}
 			{% for parent in parents %}
 				<li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem" class="breadcrumb-item">
@@ -11,6 +18,7 @@
 					</a>
 				</li>
 			{% endfor %}
+			{% endif %}
 			<li class="breadcrumb-item active" aria-current="page">
 				{{ title or "" }}
 			</li>
