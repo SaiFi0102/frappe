@@ -114,7 +114,7 @@ def filter_by_restrict_to_domain(data):
 			item_type = item.get("type")
 			item_name = item.get("name")
 
-			if (item_name in pages) or (item_name in doctypes) or item_type == 'report':
+			if (item_name in pages) or (item_name in doctypes) or item_type in ['report', 'link']:
 				_items.append(item)
 
 		d.update({ "items": _items })
@@ -211,7 +211,7 @@ def apply_permissions(data):
 			if ((item.type=="doctype" and item.name in user.can_read)
 				or (item.type=="page" and item.name in allowed_pages)
 				or (item.type=="report" and item.name in allowed_reports)
-				or item.type=="help"):
+				or item.type in ["help", "link"]):
 
 				new_items.append(item)
 

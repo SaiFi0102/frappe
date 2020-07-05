@@ -6,7 +6,7 @@
 		<span :class="['indicator', indicator_color]"></span>
 
 		<span v-if="disabled_dependent" class="link-content text-muted" v-html="label || __(name)"></span>
-		<a v-else class="link-content" :href="route" @click.prevent="handle_click" v-html="label || __(name)"></a>
+		<a v-else class="link-content" :href="route" target="_blank" @click="handle_click" v-html="label || __(name)"></a>
 		<div v-if="disabled_dependent" v-show="popover_active"
 			@mouseover="popover_hover = true" @mouseleave="popover_hover = false"
 			class="module-link-popover popover fade top in" role="tooltip"
@@ -24,7 +24,7 @@
 <script>
 export default {
 	props: ['label', 'name', 'dependencies', 'incomplete_dependencies',
-		'onboard', 'count', 'route', 'doctype', 'open_count', 'youtube_id'],
+		'onboard', 'count', 'route', 'type','doctype', 'open_count', 'youtube_id'],
 	data() {
 		return {
 			hover: false,
@@ -65,8 +65,10 @@ export default {
 		handle_click(e) {
 			if (this.youtube_id) {
 				frappe.help.show_video(this.youtube_id);
-			} else {
+				e.preventDefault();
+			} else if(this.type != 'link') {
 				frappe.set_route(this.route);
+				e.preventDefault();
 			}
 		}
 	}
