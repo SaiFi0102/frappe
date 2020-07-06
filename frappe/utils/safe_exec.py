@@ -57,6 +57,7 @@ def get_safe_globals():
 			get_meta = frappe.get_meta,
 			get_doc = frappe.get_doc,
 			get_cached_doc = frappe.get_cached_doc,
+			get_cached_value = frappe.get_cached_value,
 			get_list = frappe.get_list,
 			get_all = frappe.get_all,
 			get_system_settings = frappe.get_system_settings,
