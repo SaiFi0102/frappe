@@ -62,7 +62,7 @@ def get_print_format_doc(print_format_name, meta):
 			return None
 
 def get_rendered_template(doc, name=None, print_format=None, meta=None,
-	no_letterhead=None, trigger_print=False):
+	no_letterhead=None, trigger_print=False, args=None):
 
 	print_settings = frappe.db.get_singles_dict("Print Settings")
 
@@ -145,7 +145,10 @@ def get_rendered_template(doc, name=None, print_format=None, meta=None,
 
 	convert_markdown(doc, meta)
 
-	args = {
+	if not args:
+		args = {}
+
+	args.update({
 		"doc": doc,
 		"meta": frappe.get_meta(doc.doctype),
 		"layout": make_layout(doc, meta, format_data),
@@ -154,7 +157,7 @@ def get_rendered_template(doc, name=None, print_format=None, meta=None,
 		"letter_head": letter_head.content,
 		"footer": letter_head.footer,
 		"print_settings": frappe.get_doc("Print Settings")
-	}
+	})
 
 	html = template.render(args, filters={"len": len})
 
@@ -197,7 +200,7 @@ def get_html_and_style(doc, name=None, print_format=None, meta=None,
 	}
 
 @frappe.whitelist()
-def get_rendered_raw_commands(doc, name=None, print_format=None, meta=None, lang=None):
+def get_rendered_raw_commands(doc, name=None, print_format=None, meta=None, lang=None, args=None):
 	"""Returns Rendered Raw Commands of print format, used to send directly to printer"""
 
 	if isinstance(doc, string_types) and isinstance(name, string_types):
@@ -213,7 +216,7 @@ def get_rendered_raw_commands(doc, name=None, print_format=None, meta=None, lang
 				frappe.TemplateNotFoundError)
 
 	return {
-		"raw_commands": get_rendered_template(doc, name=name, print_format=print_format, meta=meta)
+		"raw_commands": get_rendered_template(doc, name=name, print_format=print_format, meta=meta, args=args)
 	}
 
 def validate_print_permission(doc):
