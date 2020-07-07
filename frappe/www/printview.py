@@ -203,6 +203,9 @@ def get_html_and_style(doc, name=None, print_format=None, meta=None,
 def get_rendered_raw_commands(doc, name=None, print_format=None, meta=None, lang=None, args=None):
 	"""Returns Rendered Raw Commands of print format, used to send directly to printer"""
 
+	if isinstance(args, string_types):
+		args = json.loads(args)
+
 	if isinstance(doc, string_types) and isinstance(name, string_types):
 		doc = frappe.get_doc(doc, name)
 
