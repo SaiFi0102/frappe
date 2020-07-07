@@ -244,7 +244,7 @@ frappe.ui.form.PrintPreview = Class.extend({
 			margin-top: auto;
 		`);
 	},
-	printit: function () {
+	printit: function (args) {
 		let print_server ;
 		var me = this;
 		frappe.call({
@@ -274,7 +274,7 @@ frappe.ui.form.PrintPreview = Class.extend({
 							}).then(frappe.ui.form.qz_success).catch((err) => {
 								frappe.ui.form.qz_fail(err);
 							});
-						});
+						}, args);
 					} else {
 						frappe.show_alert({
 							message: __('PDF printing via "Raw Print" is not yet supported. Please remove the printer mapping in Printer Settings and try again.'),
@@ -339,14 +339,15 @@ frappe.ui.form.PrintPreview = Class.extend({
 			${__("No Preview Available")}
 		</div>` ;
 	},
-	get_raw_commands: function (callback) {
+	get_raw_commands: function (callback, args) {
 		// fetches rendered raw commands from the server for the current print format.
 		frappe.call({
 			method: "frappe.www.printview.get_rendered_raw_commands",
 			args: {
 				doc: this.frm.doc,
 				print_format: this.selected_format(),
-				_lang: this.lang_code
+				_lang: this.lang_code,
+				args: args
 			},
 			callback: function (r) {
 				if (!r.exc) {
