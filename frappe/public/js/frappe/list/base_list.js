@@ -593,7 +593,7 @@ class FilterArea {
 		let fields = [
 			{
 				fieldtype: 'Data',
-				label: 'Name',
+				label: 'ID',
 				condition: 'like',
 				doctype: this.list_view.doctype,
 				fieldname: 'name',
@@ -620,7 +620,7 @@ class FilterArea {
 		});
 
 		fields = fields.concat(doctype_fields.filter(
-			df => (df.fieldname === title_field) || (df.in_standard_filter && frappe.model.is_value_type(df.fieldtype))
+			df => df.in_standard_filter && frappe.model.is_value_type(df.fieldtype)
 		).map(df => {
 			let options = df.options;
 			let condition = '=';
