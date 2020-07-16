@@ -165,14 +165,19 @@ frappe.ui.Dialog = class Dialog extends frappe.ui.FieldGroup {
 			this.header.find('.indicator').removeClass().addClass('indicator ' + this.indicator);
 		}
 	}
-	show() {
+	show(modal_args) {
 		// show it
 		if ( this.animate ) {
 			this.$wrapper.addClass('fade');
 		} else {
 			this.$wrapper.removeClass('fade');
 		}
-		this.$wrapper.modal("show");
+
+		if (modal_args) {
+			this.$wrapper.modal(modal_args);
+		} else {
+			this.$wrapper.modal("show");
+		}
 
 		// clear any message
 		this.clear_message();
