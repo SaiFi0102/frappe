@@ -382,17 +382,25 @@ class DatabaseQuery(object):
 			if frappe.get_meta(f.doctype).get_field(f.fieldname) is not None :
 				ref_doctype = frappe.get_meta(f.doctype).get_field(f.fieldname).options
 
-			result=[]
-			lft, rgt = frappe.db.get_value(ref_doctype, f.value, ["lft", "rgt"])
-			lt_op, gt_op = ("<=", ">=") if f.operator.lower() in ('subtree of', 'not subtree of') else ("<", ">")
-			# Get descendants elements of a DocType with a tree structure
-			if f.operator.lower() in ('descendants of', 'not descendants of', 'subtree of', 'not subtree of'):
-				result = frappe.db.sql_list("""select name from `tab{0}`
-					where lft{1}%s and rgt{2}%s order by lft asc""".format(ref_doctype, gt_op, lt_op), (lft, rgt))
-			else :
-				# Get ancestor elements of a DocType with a tree structure
-				result = frappe.db.sql_list("""select name from `tab{0}`
-					where lft{1}%s and rgt{2}%s order by lft desc""".format(ref_doctype, lt_op, gt_op), (lft, rgt))
+			result = []
+			lft_rgt = frappe.db.get_value(ref_doctype, f.value, ["lft", "rgt"])
+
+			if lft_rgt:
+				lft, rgt = lft_rgt
+				lt_op, gt_op = ("<=", ">=") if f.operator.lower() in ('subtree of', 'not subtree of') else ("<", ">")
+
+				# Get descendants elements of a DocType with a tree structure
+				if f.operator.lower() in ('descendants of', 'not descendants of', 'subtree of', 'not subtree of'):
+					result = frappe.get_all(ref_doctype, filters={
+						'lft': [gt_op, lft],
+						'rgt': [lt_op, rgt]
+					}, order_by='`lft` ASC')
+				else :
+					# Get ancestor elements of a DocType with a tree structure
+					result = frappe.get_all(ref_doctype, filters={
+						'lft': [lt_op, lft],
+						'rgt': [gt_op, rgt]
+					}, order_by='`lft` DESC')
 
 			fallback = "''"
 			value = [frappe.db.escape((v.name or '').strip(), percent=False) for v in result]
@@ -402,7 +410,7 @@ class DatabaseQuery(object):
 				value = "('')"
 			# changing operator to IN as the above code fetches all the parent / child values and convert into tuple
 			# which can be directly used with IN operator to query.
-			f.operator = 'not in' if f.operator.lower() in ('not ancestors of', 'not descendants of', 'not subtree of') else 'in'
+			f.operator = 'not in' if f.operator.lower() in ('not ancestors of', 'not descendants of') else 'in'
 
 
 		elif f.operator.lower() in ('in', 'not in'):
