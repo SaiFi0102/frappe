@@ -30,7 +30,7 @@ class AutoEmailReport(Document):
 	def validate_emails(self):
 		'''Cleanup list of emails'''
 		if ',' in self.email_to:
-			self.email_to.replace(',', '\n')
+			self.email_to = self.email_to.replace(',', '\n')
 
 		valid = []
 		for email in self.email_to.split():
