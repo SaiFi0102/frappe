@@ -150,6 +150,9 @@ class AutoRepeat(Document):
 		self.update_doc(new_doc, reference_doc)
 		new_doc.insert(ignore_permissions = True)
 
+		if self.submit_on_creation:
+			new_doc.submit()
+
 		return new_doc
 
 	def update_doc(self, new_doc, reference_doc):

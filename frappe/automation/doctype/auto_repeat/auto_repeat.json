@@ -21,6 +21,7 @@
   "repeat_on_last_day",
   "column_break_12",
   "next_schedule_date",
+  "submit_on_creation",
   "notification",
   "notify_by_email",
   "recipients",
@@ -186,9 +187,15 @@
    "fieldname": "repeat_on_last_day",
    "fieldtype": "Check",
    "label": "Repeat on Last Day of the Month"
+  },
+  {
+   "default": "0",
+   "fieldname": "submit_on_creation",
+   "fieldtype": "Check",
+   "label": "Submit On Creation"
   }
  ],
- "modified": "2020-06-04 06:53:42.364364",
+ "modified": "2020-08-19 04:43:01.038338",
  "modified_by": "Administrator",
  "module": "Automation",
  "name": "Auto Repeat",
