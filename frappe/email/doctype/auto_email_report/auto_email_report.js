@@ -72,30 +72,28 @@ frappe.ui.form.on('Auto Email Report', {
 				report_name = frm.doc.report;
 			}
 
-			if(report_filters && report_filters.length > 0) {
-				frm.set_value('filter_meta', JSON.stringify(report_filters));
+			var displayed_report_filters = report_filters;
+			if(report_filters) {
+				displayed_report_filters = report_filters.filter(d => !d.auto_email_report_ignore);
+			}
+
+			if(displayed_report_filters && displayed_report_filters.length > 0) {
+				frm.set_value('filter_meta', JSON.stringify(displayed_report_filters));
 				if (frm.is_dirty()) {
 					frm.save();
 				}
 			}
 
-			var report_filters_list = []
-			$.each(report_filters, function(key, val){
-				// Remove break fieldtype from the filters
-				if(val.fieldtype != 'Break') {
-					report_filters_list.push(val)
-				}
-			})
-			report_filters = report_filters_list;
+			displayed_report_filters = displayed_report_filters.filter(d => d.fieldtype != 'Break');
 
-			report_filters.forEach(function(f) {
+			displayed_report_filters.forEach(function(f) {
 				$('<tr><td>' + f.label + '</td><td>'+ frappe.format(filters[f.fieldname], f) +'</td></tr>')
 					.appendTo(table.find('tbody'));
 			});
 
 			table.on('click', function() {
 				var dialog = new frappe.ui.Dialog({
-					fields: report_filters,
+					fields: displayed_report_filters,
 					primary_action: function() {
 						var values = this.get_values();
 						if(values) {

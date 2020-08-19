@@ -8,14 +8,13 @@
   "title",
   "report",
   "user",
-  "enabled",
   "column_break_4",
-  "report_type",
-  "reference_report",
-  "filter_data",
+  "enabled",
   "send_if_data",
   "data_modified_till",
+  "report_type",
   "no_of_rows",
+  "reference_report",
   "report_filters",
   "filters_display",
   "filters",
@@ -27,9 +26,9 @@
   "dynamic_date_period",
   "email_settings",
   "email_to",
-  "day_of_week",
   "column_break_13",
   "frequency",
+  "day_of_week",
   "format",
   "section_break_15",
   "description"
@@ -51,7 +50,7 @@
    "reqd": 1
   },
   {
-   "default": "1",
+   "default": "0",
    "fieldname": "enabled",
    "fieldtype": "Check",
    "label": "Enabled"
@@ -67,11 +66,6 @@
    "label": "Report Type"
   },
   {
-   "fieldname": "filter_data",
-   "fieldtype": "Section Break",
-   "label": "Filter Data"
-  },
-  {
    "default": "1",
    "fieldname": "send_if_data",
    "fieldtype": "Check",
@@ -85,13 +79,13 @@
    "label": "Only Send Records Updated in Last X Hours"
   },
   {
-   "default": "100",
+   "default": "0",
+   "description": "Set 0 for no limit",
    "fieldname": "no_of_rows",
    "fieldtype": "Int",
-   "label": "No of Rows (Max 1000)"
+   "label": "Limit No of Rows"
   },
   {
-   "collapsible": 1,
    "depends_on": "eval:doc.report_type !== 'Report Builder'",
    "fieldname": "report_filters",
    "fieldtype": "Section Break",
@@ -207,7 +201,7 @@
    "unique": 1
   }
  ],
- "modified": "2020-06-19 08:10:05.885568",
+ "modified": "2020-08-19 05:46:39.144027",
  "modified_by": "Administrator",
  "module": "Email",
  "name": "Auto Email Report",
