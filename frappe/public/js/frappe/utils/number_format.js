@@ -115,14 +115,14 @@ window.format_number = function (v, format, decimals) {
 	return (is_negative ? "-" : "") + part[0] + part[1];
 };
 
-function format_currency(v, currency, decimals) {
+function format_currency(v, currency, decimals, force_symbol) {
 	var format = get_number_format(currency);
 	var symbol = get_currency_symbol(currency);
 	if(decimals === undefined) {
 		decimals = frappe.boot.sysdefaults.currency_precision || null;
 	}
 
-	if (symbol)
+	if (symbol && (frappe.boot.sysdefaults.hide_currency_symbol != "Yes" || force_symbol))
 		return symbol + " " + format_number(v, format, decimals);
 	else
 		return format_number(v, format, decimals);
@@ -130,9 +130,6 @@ function format_currency(v, currency, decimals) {
 
 function get_currency_symbol(currency) {
 	if (frappe.boot) {
-		if (frappe.boot.sysdefaults.hide_currency_symbol == "Yes")
-			return null;
-
 		if (!currency)
 			currency = frappe.boot.sysdefaults.currency;
 
