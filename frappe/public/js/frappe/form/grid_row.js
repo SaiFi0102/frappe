@@ -292,9 +292,7 @@ export default class GridRow {
 				}
 				var out = me.toggle_editable_row();
 				var col = this;
-				setTimeout(function() {
-					$(col).find('input[type="Text"]:first').focus();
-				}, 500);
+				$(col).find('input[type="Text"]:first').focus();
 				return out;
 			});
 

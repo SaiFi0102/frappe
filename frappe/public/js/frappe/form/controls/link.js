@@ -34,7 +34,7 @@ frappe.ui.form.ControlLink = frappe.ui.form.ControlData.extend({
 				if(!me.$input.val()) {
 					me.$input.val("").trigger("input");
 				}
-			}, 500);
+			}, 250);
 		});
 		this.$input.on("blur", function() {
 			// if this disappears immediately, the user's click
@@ -215,7 +215,7 @@ frappe.ui.form.ControlLink = frappe.ui.form.ControlData.extend({
 					me.awesomplete.list = me.$input.cache[doctype][term];
 				}
 			});
-		}, 500));
+		}, 100));
 
 		this.$input.on("blur", function() {
 			if(me.selected) {
