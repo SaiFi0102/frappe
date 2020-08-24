@@ -1052,7 +1052,8 @@ def validate_permissions(doctype, for_remove=False):
 					break
 
 			if not has_zero_perm:
-				frappe.throw(_("{0}: Permission at level 0 must be set before higher levels are set").format(get_txt(d)))
+				pass
+				# frappe.throw(_("{0}: Permission at level 0 must be set before higher levels are set").format(get_txt(d)))
 
 			for invalid in ("create", "submit", "cancel", "amend"):
 				if d.get(invalid): d.set(invalid, 0)
@@ -1091,7 +1092,7 @@ def validate_permissions(doctype, for_remove=False):
 
 	def check_if_importable(d):
 		if d.get("import") and not isimportable:
-			frappe.throw(_("{0}: Cannot set import as {1} is not importable").format(get_txt(d), doctype))
+			frappe.throw(_("{0}: Cannot set import as {1} is not importable").format(get_txt(d), doctype.name))
 
 	for d in permissions:
 		if not d.permlevel:

@@ -293,7 +293,7 @@
  "idx": 1,
  "issingle": 1,
  "max_attachments": 10,
- "modified": "2020-06-04 06:53:19.103154",
+ "modified": "2020-08-24 05:52:58.084961",
  "modified_by": "Administrator",
  "module": "Website",
  "name": "Website Settings",
@@ -312,6 +312,15 @@
    "permlevel": 1,
    "read": 1,
    "role": "All"
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
   }
  ],
  "sort_field": "modified",

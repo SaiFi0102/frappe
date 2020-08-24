@@ -2,6 +2,7 @@
  "creation": "2013-02-21 20:12:42",
  "description": "Settings for Contact Us Page",
  "doctype": "DocType",
+ "engine": "InnoDB",
  "field_order": [
   "introduction_section",
   "forward_to_email",
@@ -115,7 +116,7 @@
  "icon": "fa fa-cog",
  "idx": 1,
  "issingle": 1,
- "modified": "2020-06-04 06:58:57.679515",
+ "modified": "2020-08-24 05:53:02.324375",
  "modified_by": "Administrator",
  "module": "Website",
  "name": "Contact Us Settings",
@@ -129,7 +130,19 @@
    "role": "Website Manager",
    "share": 1,
    "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
   }
  ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
  "track_changes": 1
 }
