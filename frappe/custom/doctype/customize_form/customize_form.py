@@ -183,7 +183,7 @@ class CustomizeForm(Document):
 		
 		from frappe.modules.utils import export_customizations
 
-		export_customizations("Vovali", self.doc_type, sync_on_migrate=1, with_permissions=1)
+		export_customizations("Vovali", self.doc_type, sync_on_migrate=1, with_permissions=0)
 
 	def set_property_setters(self):
 		meta = frappe.get_meta(self.doc_type)
