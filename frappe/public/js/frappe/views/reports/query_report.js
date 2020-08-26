@@ -1464,3 +1464,24 @@ Object.defineProperty(frappe, 'query_report_filters_by_name', {
 		return null;
 	}
 });
+
+frappe.clean_auto_email_report_filters = function (filter_meta, filter_values, validate_mandatory, throw_mandatory) {
+	filter_meta.filter(d => d.auto_email_report_ignore).forEach(d => delete filter_values[d.fieldname]);
+	filter_meta.filter(d => (d.default || d.auto_email_report_default) && d.auto_email_report_read_only).forEach(d => {
+		filter_values[d] = d.default || d.auto_email_report_default;
+	});
+
+	if (validate_mandatory) {
+		filter_meta.filter(d => !d.auto_email_report_ignore && (d.reqd || d.auto_email_report_reqd)).forEach(d => {
+			if (!filter_values[d.fieldname]) {
+				var message = __("Please set '{0}'", [d.label]);
+
+				if (throw_mandatory) {
+					frappe.throw(message);
+				} else {
+					frappe.msgprint(message);
+				}
+			}
+		});
+	}
+}

@@ -13,13 +13,16 @@ frappe.ui.form.on('Auto Email Report', {
 					callback: function(r) {
 						frappe.dom.eval(r.message.script || "");
 						frm.script_setup_for = frm.doc.report;
+						frm.is_first_run = !frm.is_dirty();
 						frm.trigger('show_filters');
 					}
 				});
 			} else {
+				frm.is_first_run = !frm.is_dirty();
 				frm.trigger('show_filters');
 			}
 		}
+
 		if(!frm.is_new()) {
 			frm.add_custom_button(__('Download'), function() {
 				var w = window.open(
@@ -45,6 +48,7 @@ frappe.ui.form.on('Auto Email Report', {
 	report: function(frm) {
 		frm.set_value('filters', '');
 	},
+
 	show_filters: function(frm) {
 		var wrapper = $(frm.get_field('filters_display').wrapper);
 		wrapper.empty();
@@ -60,34 +64,24 @@ frappe.ui.form.on('Auto Email Report', {
 
 			var filters = JSON.parse(frm.doc.filters || '{}');
 
-			let report_filters, report_name;
+			let report_name_and_filters = frm.events.get_report_name_and_filters(frm);
+			let report_name = report_name_and_filters.report_name;
+			let report_filters = report_name_and_filters.report_filters || [];
+			let displayed_report_filters = frm.events.get_displayed_filters(report_filters);
 
-			if (frm.doc.report_type === 'Custom Report'
-				&& frappe.query_reports[frm.doc.reference_report]
-				&& frappe.query_reports[frm.doc.reference_report].filters) {
-				report_filters = frappe.query_reports[frm.doc.reference_report].filters;
-				report_name = frm.doc.reference_report;
-			} else {
-				report_filters = frappe.query_reports[frm.doc.report].filters;
-				report_name = frm.doc.report;
-			}
+			frappe.clean_auto_email_report_filters(report_filters, filters, 1, 0);
 
-			var displayed_report_filters = report_filters;
-			if(report_filters) {
-				displayed_report_filters = report_filters.filter(d => !d.auto_email_report_ignore);
-			}
-
-			if(displayed_report_filters && displayed_report_filters.length > 0) {
-				frm.set_value('filter_meta', JSON.stringify(displayed_report_filters));
-				if (frm.is_dirty()) {
+			frm.set_value('filters', JSON.stringify(filters)).then(
+				frm.set_value('filter_meta', JSON.stringify(displayed_report_filters))
+			).then(() => {
+				if (frm.is_first_run && frm.is_dirty()) {
 					frm.save();
 				}
-			}
-
-			displayed_report_filters = displayed_report_filters.filter(d => d.fieldtype != 'Break');
+				frm.is_first_run = false;
+			});
 
 			displayed_report_filters.forEach(function(f) {
-				$('<tr><td>' + f.label + '</td><td>'+ frappe.format(filters[f.fieldname], f) +'</td></tr>')
+				$('<tr><td><strong>' + f.label + '</strong></td><td>'+ frappe.format(filters[f.fieldname], f) +'</td></tr>')
 					.appendTo(table.find('tbody'));
 			});
 
@@ -103,11 +97,8 @@ frappe.ui.form.on('Auto Email Report', {
 						}
 					}
 				});
+				dialog.in_auto_repeat = 1;
 				dialog.show();
-
-				//Set query report object so that it can be used while fetching filter values in the report
-				frappe.query_report = new frappe.views.QueryReport({'filters': dialog.fields_list});
-				frappe.query_reports[report_name].onload && frappe.query_reports[report_name].onload(frappe.query_report);
 				dialog.set_values(filters);
 			})
 
@@ -119,5 +110,34 @@ frappe.ui.form.on('Auto Email Report', {
 			frm.set_df_property('to_date_field', 'options', date_fields);
 			frm.toggle_display('dynamic_report_filters_section', date_fields.length > 0);
 		}
+	},
+
+	get_report_name_and_filters: function (frm) {
+		var out = {};
+
+		if (frm.doc.report_type === 'Custom Report'
+			&& frappe.query_reports[frm.doc.reference_report]
+			&& frappe.query_reports[frm.doc.reference_report].filters) {
+			out.report_filters = frappe.query_reports[frm.doc.reference_report].filters.map(d => Object.assign({}, d));
+			out.report_name = frm.doc.reference_report;
+		} else {
+			out.report_filters = frappe.query_reports[frm.doc.report].filters.map(d => Object.assign({}, d));
+			out.report_name = frm.doc.report;
+		}
+
+		return out;
+	},
+
+	get_displayed_filters: function (report_filters) {
+		let displayed_report_filters = report_filters || [];
+
+		displayed_report_filters = displayed_report_filters.filter(d => !d.auto_email_report_ignore);
+		displayed_report_filters = displayed_report_filters.filter(d => d.fieldtype != 'Break');
+		displayed_report_filters.forEach(d => d.default = d.default || d.auto_email_report_default);
+		displayed_report_filters.forEach(d => d.read_only = d.read_only || d.auto_email_report_read_only);
+		displayed_report_filters.forEach(d => d.reqd = d.reqd || d.auto_email_report_reqd);
+		displayed_report_filters.forEach(d => d.onchange = d.onchange || d.on_change);
+
+		return displayed_report_filters;
 	}
 });
