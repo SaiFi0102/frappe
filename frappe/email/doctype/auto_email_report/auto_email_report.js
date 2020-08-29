@@ -12,6 +12,9 @@ frappe.ui.form.on('Auto Email Report', {
 					},
 					callback: function(r) {
 						frappe.dom.eval(r.message.script || "");
+						if (frappe.query_reports[frm.doc.report]) {
+							frappe.query_reports[frm.doc.report].html_format = r.message.html_format;
+						}
 						frm.script_setup_for = frm.doc.report;
 						frm.is_first_run = !frm.is_dirty();
 						frm.trigger('show_filters');
