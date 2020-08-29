@@ -73,7 +73,7 @@ def download_multi_pdf(doctype, name, format=None, no_letterhead=0):
 		frappe.local.response.filename = "{}.pdf".format(name)
 
 	frappe.local.response.filecontent = read_multi_pdf(output)
-	frappe.local.response.type = "download"
+	frappe.local.response.type = "pdf"
 
 def read_multi_pdf(output):
 	# Get the content of the merged pdf files
