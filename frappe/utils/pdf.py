@@ -180,7 +180,6 @@ def prepare_header_footer(soup):
 			elif html_id == "footer-html":
 				options["margin-bottom"] = "15mm"
 
-	print(str(options))
 	return options
 
 
