@@ -13,6 +13,18 @@ frappe.ui.form.ControlBarcode = frappe.ui.form.ControlData.extend({
 		this.barcode_area.appendTo($input_wrapper);
 	},
 
+	refresh_input: function() {
+		this._super();
+		var me = this;
+		if (me.disp_status != "None") {
+			if (me.can_write()) {
+				me.barcode_area.show();
+			} else {
+				me.barcode_area.hide();
+			}
+		}
+	},
+
 	parse(value) {
 		// Parse raw value
 		if (value) {
