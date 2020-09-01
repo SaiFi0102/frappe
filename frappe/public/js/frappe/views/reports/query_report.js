@@ -1467,8 +1467,8 @@ Object.defineProperty(frappe, 'query_report_filters_by_name', {
 
 frappe.clean_auto_email_report_filters = function (filter_meta, filter_values, validate_mandatory, throw_mandatory) {
 	filter_meta.filter(d => d.auto_email_report_ignore).forEach(d => delete filter_values[d.fieldname]);
-	filter_meta.filter(d => (d.default || d.auto_email_report_default) && d.auto_email_report_read_only).forEach(d => {
-		filter_values[d] = d.default || d.auto_email_report_default;
+	filter_meta.filter(d => (d.auto_email_report_default || d.default) && d.auto_email_report_read_only).forEach(d => {
+		filter_values[d.fieldname] = d.auto_email_report_default || d.default;
 	});
 
 	if (validate_mandatory) {
