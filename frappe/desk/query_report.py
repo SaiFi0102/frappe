@@ -4,11 +4,11 @@
 from __future__ import unicode_literals
 
 import frappe
-import os, json
+import os, json, datetime
 
 from frappe import _
 from frappe.modules import scrub, get_module_path
-from frappe.utils import flt, cint, get_html_format, get_url_to_form
+from frappe.utils import flt, cint, get_html_format, cstr, get_url_to_form
 from frappe.model.utils import render_include
 from frappe.translate import send_translations
 import frappe.desk.reportview
@@ -16,6 +16,7 @@ from frappe.permissions import get_role_permissions
 from six import string_types, iteritems
 from datetime import timedelta
 from frappe.utils import gzip_decompress
+from collections import OrderedDict
 from frappe.core.utils import ljust_list
 
 def get_report_doc(report_name):
@@ -305,29 +306,29 @@ def export_query():
 			frappe.get_cached_value('Report', report_name, 'ref_doctype'),
 			raise_exception=True
 		)
+
+	file_format_type = "Excel"
 	if isinstance(data.get("file_format_type"), string_types):
 		file_format_type = data["file_format_type"]
 
 	custom_columns = frappe.parse_json(data["custom_columns"])
 
-	include_indentation = data["include_indentation"]
+	include_indentation = data.get("include_indentation")
 	if isinstance(data.get("visible_idx"), string_types):
 		visible_idx = json.loads(data.get("visible_idx"))
 	else:
 		visible_idx = None
 
 	if file_format_type == "Excel":
-		data = run(report_name, filters, custom_columns=custom_columns)
-		data = frappe._dict(data)
-		if not data.columns:
-			frappe.respond_as_web_page(_("No data to export"),
-			_("You can try changing the filters of your report."))
-			return
+		if custom_columns:
+			columns = custom_columns
+		else:
+			columns = json.loads(data.columns) if isinstance(data.columns, string_types) else data.columns
 
-		columns = get_columns_dict(data.columns)
+		report_data = json.loads(data.data) if isinstance(data.data, string_types) else data.data
 
 		from frappe.utils.xlsxutils import make_xlsx
-		xlsx_data = build_xlsx_data(columns, data, visible_idx, include_indentation)
+		xlsx_data = [columns] + report_data
 		xlsx_file = make_xlsx(xlsx_data, "Query Report")
 
 		frappe.response['filename'] = report_name + '.xlsx'
@@ -335,35 +336,9 @@ def export_query():
 		frappe.response['type'] = 'binary'
 
 
-def build_xlsx_data(columns, data, visible_idx, include_indentation):
-	result = [[]]
-
-	# add column headings
-	for idx in range(len(data.columns)):
-		if not columns[idx].get("hidden"):
-			result[0].append(columns[idx]["label"])
-
-	# build table from result
-	for i, row in enumerate(data.result):
-		# only pick up rows that are visible in the report
-		if i in visible_idx:
-			row_data = []
-
-			if isinstance(row, dict) and row:
-				for idx in range(len(data.columns)):
-					if not columns[idx].get("hidden"):
-						label = columns[idx]["label"]
-						fieldname = columns[idx]["fieldname"]
-						cell_value = row.get(fieldname, row.get(label, ""))
-						if cint(include_indentation) and 'indent' in row and idx == 0:
-							cell_value = ('    ' * cint(row['indent'])) + cell_value
-						row_data.append(cell_value)
-			else:
-				row_data = row
-
-			result.append(row_data)
-
-	return result
+def get_report_module_dotted_path(module, report_name):
+	return frappe.local.module_app[scrub(module)] + "." + scrub(module) \
+		+ ".report." + scrub(report_name) + "." + scrub(report_name)
 
 def add_total_row(result, columns, meta = None):
 	total_row = [""]*len(columns)
@@ -636,3 +611,87 @@ def get_user_match_filters(doctypes, user):
 			match_filters[dt] = filter_list
 
 	return match_filters
+
+
+def group_report_data(rows_to_group, group_by, group_by_labels=None, total_fields=None, totals_only=False,
+		calculate_totals=None, postprocess_group=None, parent_grouped_by=None):
+	def get_grouped_by_map(group):
+		res = parent_grouped_by.copy()
+		if isinstance(group_field, (list, tuple)):
+			for i, f in enumerate(group_field):
+				res[f] = group[i]
+		else:
+			res[group_field] = group
+		return res
+
+	if not group_by and group_by is not None:
+		return rows_to_group
+	if not isinstance(group_by, list):
+		group_by = [group_by]
+	if not group_by_labels:
+		group_by_labels = {}
+	if not parent_grouped_by:
+		parent_grouped_by = OrderedDict()
+
+	group_field = group_by[0]
+	group_label = group_by_labels.get(group_field) if group_by_labels.get(group_field) else frappe.unscrub(cstr(group_field))
+	group_rows = OrderedDict()
+	group_totals = OrderedDict()
+
+	for row in rows_to_group:
+		if not group_field:
+			group_value = None
+		elif isinstance(group_field, (list, tuple)):
+			group_value = tuple(map(lambda f: row.get(f), group_field))
+		else:
+			group_value = row.get(group_field)
+
+		group_rows.setdefault(group_value, []).append(row)
+
+		if total_fields:
+			group_totals.setdefault(group_value, {})
+			for total_field in total_fields:
+				group_totals[group_value].setdefault(total_field, 0)
+				group_totals[group_value][total_field] += row[total_field]
+
+	if calculate_totals and callable(calculate_totals):
+		for group_value in group_rows.keys():
+			grouped_by_map = get_grouped_by_map(group_value)
+			group_totals[group_value] = calculate_totals(group_rows[group_value], group_field, group_value, grouped_by_map)
+
+	if totals_only:
+		return group_totals.values()
+
+	out = []
+
+	for group_value, rows in iteritems(group_rows):
+		grouped_by_map = get_grouped_by_map(group_value)
+		group_object = frappe._dict({
+			"_isGroup": 1,
+			"group_field": group_field,
+			"group_label": group_label,
+			"group_value": group_value,
+			"rows": group_report_data(rows, group_by[1:], group_by_labels=group_by_labels, totals_only=totals_only,
+				total_fields=total_fields, calculate_totals=calculate_totals, postprocess_group=postprocess_group,
+				parent_grouped_by=grouped_by_map)
+		})
+
+		for f, g in iteritems(grouped_by_map):
+			if f not in group_object:
+				group_object[f] = g
+
+		if group_totals.get(group_value):
+			group_total_row = group_totals.get(group_value)
+			group_total_row['_bold'] = 1
+			group_object['totals'] = group_total_row
+
+		if postprocess_group and callable(postprocess_group):
+			postprocess_group(group_object, grouped_by_map)
+
+		if group_object.totals:
+			group_object.totals['_isGroupTotal'] = 1
+
+		if group_object.rows or group_object.totals:
+			out.append(group_object)
+
+	return out

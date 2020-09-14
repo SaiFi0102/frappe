@@ -706,6 +706,58 @@ Object.assign(frappe.utils, {
 			return null;
 		}
 	},
+
+	group_report_data_in_printable_format: function(rows, groups, current_group) {
+		let new_group = {rows: [], group: current_group};
+		let groups_added = 0;
+
+		if (rows && rows.length) {
+			for (var row_idx = 0; row_idx < rows.length; row_idx++) {
+				let cur_row = rows[row_idx];
+
+				if (cur_row._isGroup) {
+					if (new_group.rows.length) {
+						groups.push(new_group);
+						new_group = {rows: [], group: current_group};
+						groups_added++;
+					}
+
+					let child_groups_added = frappe.utils.group_report_data_in_printable_format(cur_row.rows, groups, cur_row);
+					if (cur_row.totals) {
+						if (child_groups_added == 1) {
+							groups[groups.length - 1].rows.push(cur_row.totals);
+						} else {
+							groups.push({rows: [cur_row.totals], group: cur_row});
+						}
+					}
+				} else {
+					if (!groups.length || !cur_row.is_total_row) {
+						new_group.rows.push(cur_row);
+					}
+				}
+			}
+
+			if (new_group.rows.length) {
+				groups.push(new_group);
+				groups_added++;
+			}
+		}
+
+		return groups_added;
+	},
+
+	print_report_groups: function(rows, print_group_function, page_break_groups, _p) {
+		let groups = [];
+		frappe.utils.group_report_data_in_printable_format(rows, groups);
+
+		$.each(groups, (i, d) => {
+			print_group_function(d.rows, d.group || {});
+			if (page_break_groups) {
+				_p.push("<div class='page-break'></div>");
+			}
+		});
+	},
+
 	setup_search($wrapper, el_class, text_class, data_attr) {
 		const $search_input = $wrapper.find('[data-element="search"]').show();
 		$search_input.focus().val('');

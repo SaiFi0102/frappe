@@ -450,7 +450,7 @@ frappe.views.QueryReport = class QueryReport extends frappe.views.BaseList {
 		this.custom_columns = [];
 		this.data = this.prepare_data(data.result);
 		this.linked_doctypes = this.get_linked_doctypes();
-		this.tree_report = this.data.some(d => 'indent' in d);
+		this.tree_report = this.data.some(d => 'indent' in d) || this.data.some(d => '_isGroup' in d && 'totals' in d);
 	}
 
 	render_datatable() {
@@ -825,7 +825,7 @@ frappe.views.QueryReport = class QueryReport extends frappe.views.BaseList {
 	}
 
 	prepare_data(data) {
-		return data.map(row => {
+		let res = data.map(row => {
 			let row_obj = {};
 			if (Array.isArray(row)) {
 				this.columns.forEach((column, i) => {
@@ -836,6 +836,11 @@ frappe.views.QueryReport = class QueryReport extends frappe.views.BaseList {
 			}
 			return row;
 		});
+
+		if (this.raw_data.add_total_row) {
+			res[res.length - 1].is_total_row = true;
+		}
+		return res;
 	}
 
 	get_visible_columns() {
@@ -964,6 +969,7 @@ frappe.views.QueryReport = class QueryReport extends frappe.views.BaseList {
 			data: data,
 			original_data: this.data,
 			columns: columns,
+			print_settings: print_settings,
 			report: this
 		});
 
@@ -1042,6 +1048,8 @@ frappe.views.QueryReport = class QueryReport extends frappe.views.BaseList {
 					report_name: this.report_name,
 					custom_columns: this.custom_columns.length? this.custom_columns: [],
 					file_format_type: file_format,
+					data: data,
+					columns: column_row,
 					filters: filters,
 					visible_idx,
 					include_indentation,
@@ -1395,21 +1403,15 @@ frappe.views.QueryReport = class QueryReport extends frappe.views.BaseList {
 					${__('Collapse All')}</button>
 			</div>`);
 			this.page.footer.before(this.$tree_footer);
-			this.$tree_footer.find('[data-action=collapse_all_rows]').show();
-			this.$tree_footer.find('[data-action=expand_all_rows]').hide();
 		}
 	}
 
 	expand_all_rows() {
-		this.$tree_footer.find('[data-action=expand_all_rows]').hide();
 		this.datatable.rowmanager.expandAllNodes();
-		this.$tree_footer.find('[data-action=collapse_all_rows]').show();
 	}
 
 	collapse_all_rows() {
-		this.$tree_footer.find('[data-action=collapse_all_rows]').hide();
 		this.datatable.rowmanager.collapseAllNodes();
-		this.$tree_footer.find('[data-action=expand_all_rows]').show();
 	}
 
 	message_div(message) {
