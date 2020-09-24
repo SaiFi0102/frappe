@@ -49,7 +49,7 @@ def run_background(prepared_report):
 		create_json_gz_file(result["result"], "Prepared Report", instance.name)
 
 		instance.status = "Completed"
-		instance.columns = json.dumps(result["columns"])
+		instance.columns = frappe.as_json(result["columns"])
 		instance.report_end_time = frappe.utils.now()
 		instance.save(ignore_permissions=True)
 
