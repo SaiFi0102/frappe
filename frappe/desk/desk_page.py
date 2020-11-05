@@ -37,6 +37,15 @@ def getpage():
 
 	frappe.response.docs.append(doc)
 
+@frappe.whitelist(allow_guest=True)
+def get_app_logo_url():
+	from_settings_logo = frappe.get_cached_value("Website Settings", None, "app_logo")
+	from_settings_favicon = frappe.get_cached_value("Website Settings", None, "favicon")
+	from_hooks = frappe.get_hooks('app_logo_url')
+	from_hooks = from_hooks[-1] if from_hooks else None
+	out = from_settings_favicon or from_settings_logo or from_hooks
+	return out
+
 def has_permission(page):
 	if frappe.session.user == "Administrator" or "System Manager" in frappe.get_roles():
 		return True

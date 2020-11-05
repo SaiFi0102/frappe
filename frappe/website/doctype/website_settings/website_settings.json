@@ -17,6 +17,7 @@
   "brand_html",
   "set_banner_from_image",
   "favicon",
+  "app_logo",
   "top_bar",
   "navbar_search",
   "top_bar_items",
@@ -287,13 +288,18 @@
    "fieldtype": "Table",
    "label": "Route Redirects",
    "options": "Website Route Redirect"
+  },
+  {
+   "fieldname": "app_logo",
+   "fieldtype": "Attach",
+   "label": "App Logo"
   }
  ],
  "icon": "fa fa-cog",
  "idx": 1,
  "issingle": 1,
  "max_attachments": 10,
- "modified": "2020-08-24 05:52:58.084961",
+ "modified": "2020-11-05 13:09:53.168399",
  "modified_by": "Administrator",
  "module": "Website",
  "name": "Website Settings",
