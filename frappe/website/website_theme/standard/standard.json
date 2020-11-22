@@ -22,5 +22,6 @@
  "text_webfont": "", 
  "theme": "Standard", 
  "top_bar_color": "", 
- "top_bar_text_color": ""
+ "top_bar_text_color": "",
+ "theme_scss": ""
 }

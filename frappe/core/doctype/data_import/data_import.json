@@ -1,188 +1,173 @@
 {
- "allow_copy": 1,
- "creation": "2016-12-09 14:27:32.720061",
+ "actions": [],
+ "autoname": "format:{reference_doctype} Import on {creation}",
+ "beta": 1,
+ "creation": "2019-08-04 14:16:08.318714",
  "doctype": "DocType",
- "document_type": "Document",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
   "reference_doctype",
-  "action",
-  "insert_new",
-  "overwrite",
-  "only_update",
-  "section_break_4",
+  "import_type",
+  "download_template",
   "import_file",
-  "column_break_4",
-  "error_file",
-  "section_break_6",
-  "skip_errors",
+  "html_5",
+  "google_sheets_url",
+  "refresh_google_sheet",
+  "column_break_5",
+  "status",
   "submit_after_import",
-  "ignore_encoding_errors",
-  "no_email",
-  "import_detail",
-  "import_status",
-  "show_only_errors",
+  "mute_emails",
+  "template_options",
+  "import_warnings_section",
+  "template_warnings",
+  "import_warnings",
+  "section_import_preview",
+  "import_preview",
+  "import_log_section",
   "import_log",
-  "log_details",
-  "amended_from",
-  "total_rows"
+  "show_failed_logs",
+  "import_log_preview"
  ],
  "fields": [
   {
    "fieldname": "reference_doctype",
    "fieldtype": "Link",
-   "ignore_user_permissions": 1,
    "in_list_view": 1,
    "label": "Document Type",
    "options": "DocType",
-   "reqd": 1
+   "reqd": 1,
+   "set_only_once": 1
   },
   {
-   "fieldname": "action",
+   "fieldname": "import_type",
    "fieldtype": "Select",
-   "label": "Action",
-   "options": "Insert new records\nUpdate records",
-   "reqd": 1
-  },
-  {
-   "default": "0",
-   "depends_on": "eval:!doc.overwrite",
-   "description": "New data will be inserted.",
-   "fieldname": "insert_new",
-   "fieldtype": "Check",
-   "hidden": 1,
-   "label": "Insert new records",
+   "in_list_view": 1,
+   "label": "Import Type",
+   "options": "\nInsert New Records\nUpdate Existing Records",
+   "reqd": 1,
    "set_only_once": 1
   },
   {
-   "default": "0",
-   "depends_on": "eval:!doc.insert_new",
-   "description": "If you are updating/overwriting already created records.",
-   "fieldname": "overwrite",
-   "fieldtype": "Check",
-   "hidden": 1,
-   "label": "Update records",
-   "set_only_once": 1
-  },
-  {
-   "default": "0",
-   "depends_on": "overwrite",
-   "description": "If you don't want to create any new records while updating the older records.",
-   "fieldname": "only_update",
-   "fieldtype": "Check",
-   "label": "Don't create new records"
-  },
-  {
-   "depends_on": "eval:(!doc.__islocal)",
-   "fieldname": "section_break_4",
-   "fieldtype": "Section Break"
-  },
-  {
+   "depends_on": "eval:!doc.__islocal",
    "fieldname": "import_file",
    "fieldtype": "Attach",
-   "label": "Attach file for Import"
+   "in_list_view": 1,
+   "label": "Import File"
   },
   {
-   "fieldname": "column_break_4",
+   "fieldname": "import_preview",
+   "fieldtype": "HTML",
+   "label": "Import Preview"
+  },
+  {
+   "fieldname": "section_import_preview",
+   "fieldtype": "Section Break",
+   "label": "Preview"
+  },
+  {
+   "fieldname": "column_break_5",
    "fieldtype": "Column Break"
   },
   {
-   "depends_on": "eval: doc.import_status == \"Partially Successful\"",
-   "description": "This is the template file generated with only the rows having some error. You should use this file for correction and import.",
-   "fieldname": "error_file",
-   "fieldtype": "Attach",
-   "label": "Generated File"
+   "fieldname": "template_options",
+   "fieldtype": "Code",
+   "hidden": 1,
+   "label": "Template Options",
+   "options": "JSON",
+   "read_only": 1
   },
   {
-   "depends_on": "eval:(!doc.__islocal)",
-   "fieldname": "section_break_6",
-   "fieldtype": "Section Break"
+   "fieldname": "import_log",
+   "fieldtype": "Code",
+   "label": "Import Log",
+   "options": "JSON"
   },
   {
-   "default": "0",
-   "description": "If this is checked, rows with valid data will be imported and invalid rows will be dumped into a new file for you to import later.",
-   "fieldname": "skip_errors",
-   "fieldtype": "Check",
-   "label": "Skip rows with errors"
+   "fieldname": "import_log_section",
+   "fieldtype": "Section Break",
+   "label": "Import Log"
+  },
+  {
+   "fieldname": "import_log_preview",
+   "fieldtype": "HTML",
+   "label": "Import Log Preview"
+  },
+  {
+   "default": "Pending",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Status",
+   "options": "Pending\nSuccess\nPartial Success\nError",
+   "read_only": 1
+  },
+  {
+   "fieldname": "template_warnings",
+   "fieldtype": "Code",
+   "hidden": 1,
+   "label": "Template Warnings",
+   "options": "JSON"
   },
   {
    "default": "0",
    "fieldname": "submit_after_import",
    "fieldtype": "Check",
-   "label": "Submit after importing"
+   "label": "Submit After Import",
+   "set_only_once": 1
+  },
+  {
+   "fieldname": "import_warnings_section",
+   "fieldtype": "Section Break",
+   "label": "Import File Errors and Warnings"
+  },
+  {
+   "fieldname": "import_warnings",
+   "fieldtype": "HTML",
+   "label": "Import Warnings"
+  },
+  {
+   "depends_on": "eval:!doc.__islocal",
+   "fieldname": "download_template",
+   "fieldtype": "Button",
+   "label": "Download Template"
+  },
+  {
+   "default": "1",
+   "fieldname": "mute_emails",
+   "fieldtype": "Check",
+   "label": "Don't Send Emails",
+   "set_only_once": 1
   },
   {
    "default": "0",
-   "fieldname": "ignore_encoding_errors",
+   "fieldname": "show_failed_logs",
    "fieldtype": "Check",
-   "label": "Ignore encoding errors"
+   "label": "Show Failed Logs"
   },
   {
-   "default": "1",
-   "fieldname": "no_email",
-   "fieldtype": "Check",
-   "label": "Do not send Emails"
-  },
-  {
-   "collapsible": 1,
-   "collapsible_depends_on": "eval: doc.import_status == \"Failed\"",
-   "depends_on": "import_status",
-   "fieldname": "import_detail",
-   "fieldtype": "Section Break",
-   "label": "Import Log"
-  },
-  {
-   "fieldname": "import_status",
-   "fieldtype": "Select",
-   "label": "Import Status",
-   "options": "\nSuccessful\nFailed\nIn Progress\nPartially Successful",
-   "read_only": 1
-  },
-  {
-   "allow_on_submit": 1,
-   "default": "1",
-   "fieldname": "show_only_errors",
-   "fieldtype": "Check",
-   "label": "Show only errors",
-   "no_copy": 1,
-   "print_hide": 1
-  },
-  {
-   "allow_on_submit": 1,
-   "depends_on": "import_status",
-   "fieldname": "import_log",
+   "depends_on": "eval:!doc.__islocal && !doc.import_file",
+   "fieldname": "html_5",
    "fieldtype": "HTML",
-   "label": "Import Log"
+   "options": "<h5 class=\"text-muted uppercase\">Or</h5>"
   },
   {
-   "allow_on_submit": 1,
-   "fieldname": "log_details",
-   "fieldtype": "Code",
-   "hidden": 1,
-   "label": "Log Details",
-   "read_only": 1
+   "depends_on": "eval:!doc.__islocal && !doc.import_file\n",
+   "description": "Must be a publicly accessible Google Sheets URL",
+   "fieldname": "google_sheets_url",
+   "fieldtype": "Data",
+   "label": "Import from Google Sheets"
   },
   {
-   "fieldname": "amended_from",
-   "fieldtype": "Link",
-   "label": "Amended From",
-   "no_copy": 1,
-   "options": "Data Import",
-   "print_hide": 1,
-   "read_only": 1
-  },
-  {
-   "fieldname": "total_rows",
-   "fieldtype": "Int",
-   "hidden": 1,
-   "label": "Total Rows",
-   "read_only": 1
+   "depends_on": "eval:doc.google_sheets_url && !doc.__unsaved",
+   "fieldname": "refresh_google_sheet",
+   "fieldtype": "Button",
+   "label": "Refresh Google Sheet"
   }
  ],
- "is_submittable": 1,
- "max_attachments": 1,
- "modified": "2020-06-04 06:56:36.987738",
+ "hide_toolbar": 1,
+ "links": [],
+ "modified": "2020-06-24 14:33:03.173876",
  "modified_by": "Administrator",
  "module": "Core",
  "name": "Data Import",
@@ -192,15 +177,16 @@
    "create": 1,
    "delete": 1,
    "email": 1,
+   "export": 1,
+   "print": 1,
    "read": 1,
+   "report": 1,
    "role": "System Manager",
    "share": 1,
-   "submit": 1,
    "write": 1
   }
  ],
  "sort_field": "modified",
  "sort_order": "DESC",
- "track_changes": 1,
- "track_seen": 1
+ "track_changes": 1
 }
