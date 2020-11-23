@@ -145,7 +145,7 @@ def _restore(context, sql_file_path, mariadb_root_username=None, mariadb_root_pa
 
 	_new_site(frappe.conf.db_name, site, mariadb_root_username=mariadb_root_username,
 		mariadb_root_password=mariadb_root_password, admin_password=admin_password,
-		verbose=context.verbose, install_apps=install_app, source_sql=decompressed_file_name,
+		verbose=context.verbose, install_apps=install_app or [], source_sql=decompressed_file_name,
 		force=True, db_type=frappe.conf.db_type)
 
 	# Extract public and/or private files to the restored site, if user has given the path
