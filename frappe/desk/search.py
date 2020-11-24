@@ -77,7 +77,7 @@ def search_widget(doctype, txt, query=None, searchfield=None, start=0,
 	if query and query.split()[0].lower()!="select":
 		# by method
 		try:
-			is_whitelisted(frappe.get_attr(query))
+			#is_whitelisted(frappe.get_attr(query))
 			frappe.response["values"] = frappe.call(query, doctype, txt,
 				searchfield, start, page_length, filters, as_dict=as_dict)
 		except Exception as e:
