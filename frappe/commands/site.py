@@ -112,7 +112,7 @@ def _new_site(db_name, site, mariadb_root_username=None, mariadb_root_password=N
 @pass_context
 def restore(context, sql_file_path, mariadb_root_username=None, mariadb_root_password=None, db_name=None, verbose=None, install_app=None, admin_password=None, force=None, with_public_files=None, with_private_files=None):
 	"Restore site database from an sql file"
-	_restore(sql_file_path, mariadb_root_username, mariadb_root_password, db_name, verbose, install_app, admin_password, force, with_public_files, with_private_files)
+	_restore(context, sql_file_path, mariadb_root_username, mariadb_root_password, db_name, verbose, install_app, admin_password, force, with_public_files, with_private_files)
 
 def _restore(context, sql_file_path, mariadb_root_username=None, mariadb_root_password=None, db_name=None, verbose=None, install_app=None, admin_password=None, force=None, with_public_files=None, with_private_files=None):
 	from frappe.installer import extract_sql_gzip, extract_tar_files, is_downgrade
