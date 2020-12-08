@@ -87,7 +87,6 @@ frappe.route = function() {
 frappe.get_route = function(route) {
 	// for app
 	route = frappe.get_raw_route_str(route).split('/');
-	route = $.map(route, frappe._decode_str);
 	var parts = null;
 	var doc_name = route[route.length - 1];
 	// if the last part contains ? then check if it is valid query string
@@ -97,6 +96,8 @@ frappe.get_route = function(route) {
 	} else {
 		parts = doc_name;
 	}
+
+	route = $.map(route, frappe._decode_str);
 	if (parts.length > 1) {
 		var query_params = frappe.utils.get_query_params(parts[1]);
 		frappe.route_options = $.extend(frappe.route_options || {}, query_params);
